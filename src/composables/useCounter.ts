@@ -1,0 +1,24 @@
+import { ref, type Ref } from 'vue'
+
+export function useCounter(initialValue = 0) {
+  const count: Ref<number> = ref(initialValue)
+
+  const increment = (): void => {
+    count.value++
+  }
+
+  const decrement = (): void => {
+    count.value--
+  }
+
+  const reset = (): void => {
+    count.value = initialValue
+  }
+
+  return {
+    count,
+    increment,
+    decrement,
+    reset
+  }
+}
