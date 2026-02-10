@@ -15,6 +15,7 @@ Template project Vue 3 + Vite siap pakai untuk development aplikasi web modern d
 | [Playwright](https://playwright.dev/)                 | 1.49  | E2E testing                                       |
 | [ESLint](https://eslint.org/)                         | 9     | Code linting                                      |
 | [Prettier](https://prettier.io/)                      | 3     | Code formatting                                   |
+| [Husky](https://typicode.github.io/husky/)            | 9     | Git hooks manager                                 |
 | [Commitlint](https://commitlint.js.org/)              | 20    | Commit message linting                            |
 | [Docker](https://www.docker.com/)                     | -     | Containerization                                  |
 | [GitHub Actions](https://github.com/features/actions) | -     | CI/CD                                             |
@@ -54,6 +55,9 @@ vue-vite-template/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                 # GitHub Actions CI pipeline
+├── .husky/
+│   ├── pre-commit                 # Hook: lint-staged sebelum commit
+│   └── commit-msg                 # Hook: validasi format commit message
 ├── public/
 │   ├── robots.txt                 # SEO robots config
 │   └── vite.svg                   # Favicon
@@ -309,7 +313,9 @@ Project ini menyertakan GitHub Actions workflow (`.github/workflows/ci.yml`) yan
 3. **E2E Tests** - Playwright (Chromium, Firefox, WebKit)
 4. **Build** - Production build (setelah lint dan unit test lulus)
 
-## Git Hooks
+## Git Hooks (Husky)
+
+Project ini menggunakan [Husky](https://typicode.github.io/husky/) untuk menjalankan Git hooks secara otomatis. Husky akan ter-setup otomatis saat `npm install` melalui script `prepare`.
 
 ### Pre-commit
 
@@ -318,9 +324,11 @@ Otomatis menjalankan `lint-staged` yang akan:
 - ESLint + auto-fix untuk file `*.{js,ts,vue}`
 - Prettier formatting untuk semua file yang di-stage
 
+Jika ada error yang tidak bisa di-fix otomatis, commit akan ditolak.
+
 ### Commit Message
 
-Menggunakan [Conventional Commits](https://www.conventionalcommits.org/):
+Menggunakan [Commitlint](https://commitlint.js.org/) untuk memvalidasi format [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>: <deskripsi>
