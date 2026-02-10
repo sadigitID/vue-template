@@ -26,12 +26,12 @@ Template project Vue 3 + Vite siap pakai untuk development aplikasi web modern d
 - [Node.js](https://nodejs.org/) >= 22
 - [npm](https://www.npmjs.com/) >= 10
 
-### Instalasi
+### Membuat Project Baru
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd vue-vite-template
+# Buat project baru dari template
+npx degit sadigitid/vue-template nama-project
+cd nama-project
 
 # Install dependencies
 npm install
@@ -44,6 +44,8 @@ npm run dev
 ```
 
 Buka [http://localhost:3000](http://localhost:3000) di browser.
+
+> **Catatan:** `degit` akan men-download template tanpa `.git` history, sehingga Anda mendapatkan project bersih yang siap di-inisialisasi dengan `git init`.
 
 ## Struktur Project
 
