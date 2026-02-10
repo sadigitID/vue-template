@@ -10,7 +10,7 @@ This document provides AI-specific guidelines for reviewing and contributing to 
 - **State Management**: Pinia (optional, minimal setup)
 - **Routing**: Vue Router 4
 - **Testing**: Vitest (unit) + Playwright (E2E)
-- **Code Quality**: ESLint 9 + Prettier 3 + Husky
+- **Code Quality**: ESLint 9 + Prettier 3
 
 ## Code Review Priorities
 
@@ -39,7 +39,7 @@ interface Props {
   count?: number
 }
 const props = withDefaults(defineProps<Props>(), {
-  count: 0
+  count: 0,
 })
 
 // 3. Emits interface
@@ -94,13 +94,13 @@ const user = reactive({ name: 'John', age: 30 })
 const { name, age } = toRefs(user)
 
 // ❌ BAD: Destructuring reactive loses reactivity
-const { name, age } = user  // Wrong!
+const { name, age } = user // Wrong!
 
 // ✅ GOOD: Computed for derived state
 const fullName = computed(() => `${user.name} ${user.age}`)
 
 // ❌ BAD: Don't mutate props directly
-props.count++  // Wrong!
+props.count++ // Wrong!
 
 // ✅ GOOD: Emit events to parent
 emit('update', props.count + 1)
@@ -130,7 +130,7 @@ export function useCounter(initialValue = 0) {
     count,
     doubled,
     increment,
-    decrement
+    decrement,
   }
 }
 ```
@@ -154,7 +154,7 @@ const fetchUser = async (id: string): Promise<User> => {
 }
 
 // ❌ BAD: Any types
-const data: any = await fetchUser('123')  // Wrong!
+const data: any = await fetchUser('123') // Wrong!
 
 // ✅ GOOD: Type assertions with proper checks
 const user = data as User
@@ -197,7 +197,7 @@ if (isUser(data)) {
 ```typescript
 // ❌ BAD: Direct mutation
 function updateUser(user: User, name: string): User {
-  user.name = name  // Mutation!
+  user.name = name // Mutation!
   return user
 }
 
@@ -205,7 +205,7 @@ function updateUser(user: User, name: string): User {
 function updateUser(user: User, name: string): User {
   return {
     ...user,
-    name
+    name,
   }
 }
 
@@ -213,14 +213,14 @@ function updateUser(user: User, name: string): User {
 const addItem = <T>(items: T[], item: T): T[] => [...items, item]
 const removeItem = <T>(items: T[], index: number): T[] => [
   ...items.slice(0, index),
-  ...items.slice(index + 1)
+  ...items.slice(index + 1),
 ]
 
 // ✅ GOOD: For nested objects
 import { produce } from 'immer'
 
 const updateNested = (state: State, path: string, value: unknown) =>
-  produce(state, draft => {
+  produce(state, (draft) => {
     draft.nested[path] = value
   })
 ```
@@ -285,7 +285,7 @@ const expensiveValue = computed(() => {
 })
 
 // ❌ BAD: Methods re-run on every render
-const expensiveValue = () => heavyCalculation(baseValue.value)  // Wrong!
+const expensiveValue = () => heavyCalculation(baseValue.value) // Wrong!
 ```
 
 ### v-memo for Expensive Components
@@ -306,8 +306,8 @@ const expensiveValue = () => heavyCalculation(baseValue.value)  // Wrong!
 const routes = [
   {
     path: '/about',
-    component: () => import('@/views/AboutView.vue')  // Code split
-  }
+    component: () => import('@/views/AboutView.vue'), // Code split
+  },
 ]
 ```
 
@@ -322,7 +322,7 @@ const HeavyComponent = defineAsyncComponent({
   loader: () => import('./HeavyComponent.vue'),
   loadingComponent: LoadingSpinner,
   delay: 200,
-  timeout: 3000
+  timeout: 3000,
 })
 </script>
 ```
@@ -406,9 +406,7 @@ export const useUserStore = defineStore('user', () => {
   const loading = ref(false)
 
   // Getters
-  const activeUsers = computed(() =>
-    users.value.filter(user => user.isActive)
-  )
+  const activeUsers = computed(() => users.value.filter((user) => user.isActive))
 
   // Actions
   const fetchUsers = async (): Promise<void> => {
@@ -421,7 +419,7 @@ export const useUserStore = defineStore('user', () => {
     users,
     loading,
     activeUsers,
-    fetchUsers
+    fetchUsers,
   }
 })
 ```
@@ -432,7 +430,7 @@ export const useUserStore = defineStore('user', () => {
 <!-- ❌ BAD: Direct DOM manipulation -->
 <script setup lang="ts">
 onMounted(() => {
-  document.querySelector('.my-element')?.classList.add('active')  // Wrong!
+  document.querySelector('.my-element')?.classList.add('active') // Wrong!
 })
 </script>
 
@@ -448,21 +446,29 @@ const isActive = ref(false)
 
 ```typescript
 // ❌ BAD: Watch with deep: true for large objects
-watch(largeObject, () => {
-  // This is expensive!
-}, { deep: true })  // Wrong!
+watch(
+  largeObject,
+  () => {
+    // This is expensive!
+  },
+  { deep: true }
+) // Wrong!
 
 // ✅ GOOD: Watch specific properties
-watch(() => largeObject.property, () => {
-  // Only re-run when this property changes
-})
+watch(
+  () => largeObject.property,
+  () => {
+    // Only re-run when this property changes
+  }
+)
 ```
 
 ## Security Considerations
 
 ```vue
 <!-- ❌ BAD: Unescaped HTML (XSS risk) -->
-<div v-html="userInput" />  <!-- Wrong! -->
+<div v-html="userInput" />
+<!-- Wrong! -->
 
 <!-- ✅ GOOD: Use text interpolation -->
 <div>{{ userInput }}</div>
@@ -474,7 +480,7 @@ watch(() => largeObject.property, () => {
 ```typescript
 // ❌ BAD: Unvalidated user input
 const search = (query: string): void => {
-  fetch(`/api/search?q=${query}`)  // Wrong! No URL encoding
+  fetch(`/api/search?q=${query}`) // Wrong! No URL encoding
 }
 
 // ✅ GOOD: Validate and encode

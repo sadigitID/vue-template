@@ -1,99 +1,271 @@
-# Vue + Vite Template - Team Coding Standards
+# Aturan Development - Vue + Vite Template
 
-This document defines the coding standards and best practices for our Vue 3 + Vite projects. All team members must follow these guidelines.
+Dokumen ini mendefinisikan aturan dan standar development untuk project Vue 3 + Vite. Semua anggota tim wajib mengikuti panduan ini.
 
-## Table of Contents
+## Daftar Isi
 
-- [General Principles](#general-principles)
-- [Code Style](#code-style)
-- [Vue 3 Standards](#vue-3-standards)
-- [TypeScript Standards](#typescript-standards)
-- [Testing Standards](#testing-standards)
-- [Git Workflow](#git-workflow)
-- [References](#references)
-
----
-
-## General Principles
-
-### Core Values
-
-1. **Readability First** - Code is read more than written
-2. **Explicit over Implicit** - Make intentions clear
-3. **Small is Beautiful** - Keep components and functions focused
-4. **Type Safety** - Leverage TypeScript's strict mode
-5. **Immutability** - Avoid mutation, prefer functional patterns
-
-### Before Committing
-
-Always run:
-```bash
-pnpm run lint        # Check for linting errors
-pnpm run format      # Format code with Prettier
-pnpm run type-check  # Verify TypeScript types
-pnpm run test        # Run all tests
-```
+- [Prinsip Umum](#prinsip-umum)
+- [Aturan Penamaan File](#aturan-penamaan-file)
+- [Aturan Struktur Folder](#aturan-struktur-folder)
+- [Aturan Vue Component](#aturan-vue-component)
+- [Aturan TypeScript](#aturan-typescript)
+- [Aturan Styling](#aturan-styling)
+- [Aturan State Management (Pinia)](#aturan-state-management-pinia)
+- [Aturan Routing](#aturan-routing)
+- [Aturan Testing](#aturan-testing)
+- [Aturan Git Workflow](#aturan-git-workflow)
+- [Aturan Code Style](#aturan-code-style)
+- [Aturan Keamanan](#aturan-keamanan)
+- [Aturan Performa](#aturan-performa)
+- [Checklist Sebelum Commit](#checklist-sebelum-commit)
 
 ---
 
-## Code Style
+## Prinsip Umum
 
-### File Naming
+1. **Readability First** - Code dibaca lebih sering daripada ditulis
+2. **Explicit over Implicit** - Buat niat sejelas mungkin
+3. **Small is Beautiful** - Jaga komponen dan fungsi tetap fokus
+4. **Type Safety** - Manfaatkan TypeScript strict mode sepenuhnya
+5. **Immutability** - Hindari mutasi, gunakan spread operator atau `structuredClone`
+6. **DRY (Don't Repeat Yourself)** - Hindari duplikasi, ekstrak ke composable atau utility
+7. **KISS (Keep It Simple, Stupid)** - Jangan over-engineer
 
-```
-Components:   PascalCase  (UserProfile.vue)
-Composables:  camelCase   (useUserData.ts)
-Utils:        camelCase   (formatDate.ts)
-Types:        camelCase   (userTypes.ts)
-Constants:    SCREAMING_SNAKE_CASE  (API_BASE_URL.ts)
-```
+---
 
-### Imports Order
+## Aturan Penamaan File
 
-```typescript
-// 1. External libraries
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+### Konvensi Penamaan
 
-// 2. Internal modules (use @ alias)
-import { Button } from '@/components/common'
-import { useAuth } from '@/composables/useAuth'
+| Jenis File            | Format                         | Contoh                                         |
+| --------------------- | ------------------------------ | ---------------------------------------------- |
+| **Vue Components**    | `PascalCase.vue`               | `UserProfile.vue`, `DataTable.vue`             |
+| **Views (Pages)**     | `PascalCase` + suffix `View`   | `HomeView.vue`, `UserDetailView.vue`           |
+| **Layouts**           | `PascalCase` + suffix `Layout` | `DefaultLayout.vue`, `AuthLayout.vue`          |
+| **Composables**       | `camelCase` + prefix `use`     | `useCounter.ts`, `useAuth.ts`                  |
+| **Pinia Stores**      | `camelCase` (nama domain)      | `app.ts`, `user.ts`, `cart.ts`                 |
+| **Utility Functions** | `camelCase`                    | `helpers.ts`, `formatDate.ts`, `validators.ts` |
+| **Type Definitions**  | `camelCase`                    | `common.ts`, `user.ts`, `api.ts`               |
+| **Constants**         | `camelCase`                    | `config.ts`, `endpoints.ts`                    |
+| **Test Files**        | `[nama].spec.ts`               | `useCounter.spec.ts`, `home.spec.ts`           |
 
-// 3. Types
-import type { User } from '@/types/user'
-
-// 4. Static assets
-import logoUrl from '@/assets/logo.svg'
-```
-
-### Naming Conventions
+### Aturan Nama Variable & Function
 
 ```typescript
-// ✅ GOOD: Descriptive names
-const getUserById = (id: string): Promise<User> => { }
+// --- Variables ---
+// Boolean: gunakan prefix is, has, can, should
 const isLoading = ref(false)
+const hasPermission = computed(() => ...)
+const canEdit = ref(true)
 
-// ❌ BAD: Abbreviations, unclear names
-const getUsr = (i: string) => { }  // Wrong!
-const ld = ref(false)  // Wrong!
+// Array: gunakan bentuk jamak (plural)
+const users = ref<User[]>([])
+const selectedItems = ref<string[]>([])
+
+// Object/single entity: gunakan bentuk tunggal (singular)
+const user = ref<User | null>(null)
+const currentItem = ref<Item>()
+
+// --- Functions ---
+// Action: gunakan kata kerja di depan
+const fetchUsers = async () => { ... }
+const handleSubmit = () => { ... }
+const formatDate = (date: Date) => { ... }
+const validateEmail = (email: string) => { ... }
+
+// Event handler: gunakan prefix handle atau on
+const handleClick = () => { ... }
+const onInputChange = () => { ... }
+
+// Getter/computed: gunakan kata sifat/noun yang deskriptif
+const fullName = computed(() => ...)
+const totalPrice = computed(() => ...)
+const filteredUsers = computed(() => ...)
+```
+
+### Nama yang DILARANG
+
+```typescript
+// DILARANG: Singkatan tidak jelas
+const usr = ref(null) // Gunakan: user
+const btn = ref(null) // Gunakan: button
+const msg = ref('') // Gunakan: message
+const val = ref(0) // Gunakan: value
+const idx = ref(0) // Gunakan: index
+const e = (event) => {} // Gunakan: event, error (sesuai konteks)
+
+// DILARANG: Nama generik tanpa konteks
+const data = ref({}) // Gunakan: userData, responseData
+const list = ref([]) // Gunakan: userList, productList
+const temp = ref(null) // Jangan gunakan variable temporary
+
+// DILARANG: any type
+const data: any = {} // Selalu gunakan type yang spesifik
 ```
 
 ---
 
-## Vue 3 Standards
+## Aturan Struktur Folder
 
-### Component Structure
+### Folder `src/`
+
+```
+src/
+├── assets/              # Static assets
+│   ├── main.css         # Global CSS
+│   ├── images/          # Gambar (opsional)
+│   └── fonts/           # Custom fonts (opsional)
+│
+├── components/          # Vue components
+│   ├── common/          # Komponen reusable yang generic
+│   │   ├── Button.vue
+│   │   ├── Input.vue
+│   │   ├── Modal.vue
+│   │   └── ...
+│   ├── features/        # Komponen spesifik fitur
+│   │   ├── auth/        # Komponen terkait autentikasi
+│   │   │   ├── LoginForm.vue
+│   │   │   └── RegisterForm.vue
+│   │   └── dashboard/   # Komponen terkait dashboard
+│   │       ├── StatCard.vue
+│   │       └── Chart.vue
+│   └── layouts/         # Layout components
+│       ├── DefaultLayout.vue
+│       └── AuthLayout.vue
+│
+├── composables/         # Composition API hooks (reusable logic)
+│   ├── useCounter.ts
+│   ├── useAuth.ts
+│   └── useLocalStorage.ts
+│
+├── router/              # Vue Router
+│   └── index.ts         # Route definitions
+│
+├── stores/              # Pinia stores
+│   ├── app.ts           # App-level store
+│   ├── user.ts          # User store
+│   └── index.ts         # Re-exports
+│
+├── types/               # TypeScript definitions
+│   ├── common.ts        # Shared types (ApiResponse, dll)
+│   ├── user.ts          # Domain-specific types
+│   └── index.ts         # Re-exports
+│
+├── utils/               # Utility functions (pure functions)
+│   ├── helpers.ts       # General helper functions
+│   ├── validators.ts    # Validation functions
+│   └── index.ts         # Re-exports
+│
+├── views/               # Page components (1 per route)
+│   ├── HomeView.vue
+│   ├── AboutView.vue
+│   └── NotFoundView.vue
+│
+├── App.vue              # Root component
+├── env.d.ts             # Env variable types
+└── main.ts              # Entry point
+```
+
+### Aturan Penempatan File
+
+| Jenis                  | Folder                         | Aturan                                                               |
+| ---------------------- | ------------------------------ | -------------------------------------------------------------------- |
+| **Components**         | `components/common/`           | Hanya komponen yang bisa di-reuse di mana saja (tidak terikat fitur) |
+| **Feature Components** | `components/features/<fitur>/` | Grup berdasarkan fitur/domain. Hanya dipakai di dalam fitur tersebut |
+| **Layouts**            | `components/layouts/`          | Komponen layout yang membungkus halaman                              |
+| **Views**              | `views/`                       | Satu file per route, suffix `View` wajib                             |
+| **Composables**        | `composables/`                 | Harus diawali `use`, satu file per composable                        |
+| **Stores**             | `stores/`                      | Satu file per domain/entity                                          |
+| **Types**              | `types/`                       | Satu file per domain, plus `common.ts` untuk shared types            |
+| **Utils**              | `utils/`                       | Pure functions saja, tidak boleh punya side effects                  |
+
+### Barrel Exports (index.ts)
+
+Setiap folder yang berisi module wajib punya `index.ts` sebagai barrel export:
+
+```typescript
+// src/stores/index.ts
+export { useAppStore } from './app'
+export { useUserStore } from './user'
+
+// src/types/index.ts
+export type * from './common'
+export type * from './user'
+
+// src/utils/index.ts
+export { formatDate, formatCurrency } from './helpers'
+export { validateEmail } from './validators'
+```
+
+Cara import:
+
+```typescript
+// Gunakan barrel export
+import { useAppStore } from '@/stores'
+import type { User } from '@/types'
+import { formatDate } from '@/utils'
+
+// Atau import langsung (juga boleh)
+import { useAppStore } from '@/stores/app'
+```
+
+---
+
+## Aturan Vue Component
+
+### Struktur Component (Urutan Wajib)
 
 ```vue
 <script setup lang="ts">
-// 1. Imports
-// 2. Props interface
-// 3. Emits interface
+// 1. Imports (external -> internal -> types -> assets)
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAppStore } from '@/stores'
+import type { User } from '@/types'
+
+// 2. Props definition
+interface Props {
+  title: string
+  count?: number
+}
+const props = withDefaults(defineProps<Props>(), {
+  count: 0,
+})
+
+// 3. Emits definition
+interface Emits {
+  (e: 'update', value: number): void
+  (e: 'delete', id: string): void
+}
+const emit = defineEmits<Emits>()
+
 // 4. Composables
-// 5. Reactive state
+const router = useRouter()
+const appStore = useAppStore()
+
+// 5. Reactive state (ref, reactive)
+const isLoading = ref(false)
+
 // 6. Computed properties
-// 7. Methods
-// 8. Lifecycle hooks
+const doubled = computed(() => props.count * 2)
+
+// 7. Methods / functions
+const handleClick = (): void => {
+  emit('update', props.count + 1)
+}
+
+// 8. Watchers
+watch(
+  () => props.count,
+  (newVal) => {
+    // ...
+  }
+)
+
+// 9. Lifecycle hooks
+onMounted(() => {
+  // ...
+})
 </script>
 
 <template>
@@ -101,118 +273,93 @@ const ld = ref(false)  // Wrong!
 </template>
 
 <style scoped>
-/* Styles */
+/* Styles - WAJIB scoped */
 </style>
 ```
 
-### Props Definition
+### Batasan Ukuran Component
+
+| Metric                    | Maksimal  | Tindakan                           |
+| ------------------------- | --------- | ---------------------------------- |
+| Total baris file          | 400 baris | Pecah menjadi sub-components       |
+| Baris per function        | 50 baris  | Ekstrak ke composable atau utility |
+| Jumlah props              | 10 props  | Gunakan object props               |
+| Nesting depth di template | 4 level   | Flatten atau extract component     |
+| Jumlah watchers           | 3 watcher | Pertimbangkan computed/composable  |
+
+### Props
 
 ```typescript
-// ✅ GOOD: Define props with interface
+// WAJIB: Gunakan interface untuk props
 interface Props {
   title: string
-  count?: number
   items: string[]
+  count?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   count: 0,
-  items: () => []
+  items: () => [],
 })
 
-// ❌ BAD: Without interface
+// DILARANG: Props tanpa interface
 defineProps({
   title: String,
-  count: Number  // Wrong!
+  count: Number,
 })
 ```
 
-### Emits Definition
+### Emits
 
 ```typescript
-// ✅ GOOD: Typed emits
+// WAJIB: Gunakan typed emits
 interface Emits {
   (e: 'update', value: number): void
   (e: 'delete', id: string): void
 }
-
 const emit = defineEmits<Emits>()
 
-// Usage
-emit('update', 123)
+// DILARANG: Untyped emits
+const emit = defineEmits(['update', 'delete'])
 ```
 
-### Component Size Limits
+### Component Communication
 
-- **Max file size**: 400 lines (split if larger)
-- **Max function size**: 50 lines (extract if larger)
-- **Max component props**: 10 props (use object if more)
-- **Max nesting depth**: 4 levels (flatten if deeper)
-
-### Single File Component Guidelines
-
-```vue
-<!-- ✅ GOOD: Clear sections -->
-<script setup lang="ts">
-import { computed } from 'vue'
-
-interface Props {
-  firstName: string
-  lastName: string
-}
-const props = defineProps<Props>()
-
-const fullName = computed(() =>
-  `${props.firstName} ${props.lastName}`
-)
-</script>
-
-<template>
-  <span class="user-name">{{ fullName }}</span>
-</template>
-
-<style scoped>
-.user-name {
-  font-weight: 600;
-}
-</style>
+```
+Data mengalir dari parent ke child? -> Props
+Child memberi tahu parent?          -> Emits
+State berbagi antar banyak komponen? -> Pinia Store
+Logic reusable?                      -> Composable
 ```
 
 ---
 
-## TypeScript Standards
+## Aturan TypeScript
 
-### Strict Mode Rules
+### Strict Mode
 
-We use TypeScript strict mode. No exceptions.
+TypeScript strict mode aktif dan tidak boleh dinonaktifkan. Aturan:
 
-```typescript
-// ✅ GOOD: Explicit types
-function calculateTotal(prices: number[]): number {
-  return prices.reduce((sum, price) => sum + price, 0)
-}
+- **Tidak boleh** menggunakan `any`. Gunakan `unknown` lalu type-guard
+- **Wajib** explicit return type untuk function publik
+- **Wajib** mendefinisikan type di file terpisah (`src/types/`)
 
-// ❌ BAD: Any type
-function calculateTotal(prices: any): any {  // Wrong!
-  return prices.reduce((sum: any, price: any) => sum + price, 0)
-}
-```
-
-### Type Definitions
+### Type Definition
 
 ```typescript
-// ✅ GOOD: Define types in separate files
-// src/types/user.ts
-
+// WAJIB: Interface untuk object shape
 export interface User {
   id: string
   name: string
   email: string
   role: UserRole
+  createdAt: string
 }
 
+// WAJIB: Union type untuk enum-like values
 export type UserRole = 'admin' | 'user' | 'guest'
 
+// WAJIB: DTO types untuk API request/response
 export interface CreateUserDto {
   name: string
   email: string
@@ -223,212 +370,338 @@ export interface UpdateUserDto {
   name?: string
   email?: string
 }
+```
 
-// Import in components
+### Import Types
+
+```typescript
+// WAJIB: Gunakan `import type` untuk type-only imports
 import type { User, UserRole } from '@/types/user'
+
+// DILARANG: Import type tanpa `type` keyword
+import { User, UserRole } from '@/types/user'
 ```
 
 ### Error Handling
 
 ```typescript
-// ✅ GOOD: Comprehensive error handling
+// WAJIB: Try-catch untuk async operations
 async function fetchUser(id: string): Promise<User> {
   try {
     const response = await fetch(`/api/users/${id}`)
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-
-    const data: unknown = await response.json()
-
-    // Validate response
-    if (!isValidUser(data)) {
-      throw new Error('Invalid user data received')
-    }
-
-    return data
+    return await response.json()
   } catch (error) {
-    console.error('Failed to fetch user:', error)
-    throw new Error('Unable to fetch user. Please try again.')
+    // Handle error appropriately
+    throw new Error('Unable to fetch user')
   }
 }
 
-function isValidUser(data: unknown): data is User {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'id' in data &&
-    'name' in data &&
-    'email' in data
-  )
+// WAJIB: Type guard untuk runtime validation
+function isUser(data: unknown): data is User {
+  return typeof data === 'object' && data !== null && 'id' in data && 'name' in data
 }
 ```
 
 ---
 
-## Testing Standards
+## Aturan Styling
 
-### Test File Structure
+### CSS Scoped
+
+```vue
+<!-- WAJIB: Selalu gunakan scoped styles -->
+<style scoped>
+.my-component {
+  /* styles */
+}
+</style>
+
+<!-- DILARANG: Global styles di component -->
+<style>
+.my-component {
+  /* Ini akan affect semua element! */
+}
+</style>
+```
+
+### Class Naming
+
+Gunakan kebab-case untuk CSS class names:
+
+```vue
+<template>
+  <!-- BENAR -->
+  <div class="user-profile">
+    <h2 class="user-profile__title">{{ name }}</h2>
+    <p class="user-profile__description">{{ bio }}</p>
+  </div>
+
+  <!-- SALAH -->
+  <div class="userProfile">
+    <h2 class="UserProfileTitle">{{ name }}</h2>
+  </div>
+</template>
+```
+
+### Global Styles
+
+Global styles hanya boleh ditempatkan di `src/assets/main.css` dan hanya berisi:
+
+- CSS reset/normalize
+- CSS variables (`:root`)
+- Typography dasar (body, headings)
+- Base element styles (button, input, link)
+
+---
+
+## Aturan State Management (Pinia)
+
+### Kapan Menggunakan Pinia
+
+| Situasi                                   | Solusi                 |
+| ----------------------------------------- | ---------------------- |
+| State lokal component                     | `ref()` / `reactive()` |
+| State shared 2-3 component (parent-child) | Props + Emits          |
+| State shared banyak component             | Pinia Store            |
+| Logic reusable tanpa shared state         | Composable             |
+
+### Struktur Store
 
 ```typescript
-// ✅ GOOD: Clear test structure
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
-import Counter from './Counter.vue'
+// WAJIB: Gunakan Composition API syntax
+export const useUserStore = defineStore('user', () => {
+  // --- State ---
+  const users = ref<User[]>([])
+  const isLoading = ref(false)
 
-describe('Counter', () => {
+  // --- Getters (computed) ---
+  const activeUsers = computed(() => users.value.filter((u) => u.isActive))
+
+  // --- Actions (functions) ---
+  async function fetchUsers(): Promise<void> {
+    isLoading.value = true
+    try {
+      users.value = await api.getUsers()
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  return {
+    // State
+    users,
+    isLoading,
+    // Getters
+    activeUsers,
+    // Actions
+    fetchUsers,
+  }
+})
+```
+
+### Aturan Store
+
+1. **Satu store per domain** - `user.ts`, `cart.ts`, `product.ts`
+2. **Gunakan Composition API** - Bukan Options API
+3. **Return type explicit** - Selalu return semua state, getters, dan actions
+4. **Prefix `use`** - `useUserStore`, `useCartStore`
+5. **Store name unique** - Parameter pertama `defineStore` harus unique
+
+---
+
+## Aturan Routing
+
+### Route Naming
+
+```typescript
+// WAJIB: Setiap route harus punya name
+{
+  path: '/users/:id',
+  name: 'user-detail',        // kebab-case
+  component: () => import('@/views/UserDetailView.vue'),
+}
+
+// WAJIB: Lazy load semua route (kecuali layout)
+component: () => import('@/views/UserDetailView.vue')
+
+// BOLEH: Eager load untuk layout
+import DefaultLayout from '@/components/layouts/DefaultLayout.vue'
+```
+
+### Navigasi
+
+```typescript
+// WAJIB: Gunakan named routes
+router.push({ name: 'user-detail', params: { id: '123' } })
+
+// HINDARI: Path-based navigation
+router.push('/users/123') // Hindari ini
+```
+
+### Catch-All 404
+
+Route catch-all `/:pathMatch(.*)*` wajib ada sebagai route terakhir.
+
+---
+
+## Aturan Testing
+
+### Struktur Test
+
+```
+test/
+├── unit/                # Unit tests (Vitest)
+│   ├── composables/     # Test composable
+│   ├── stores/          # Test store
+│   ├── utils/           # Test utility
+│   └── components/      # Test component
+└── e2e/                 # E2E tests (Playwright)
+    └── flows/           # User flow tests
+```
+
+### Unit Test
+
+```typescript
+// WAJIB: Struktur describe-it yang jelas
+describe('useCounter', () => {
   describe('initial state', () => {
-    it('displays initial count', () => {
-      const wrapper = mount(Counter, {
-        props: { initialCount: 0 }
-      })
+    it('starts with default value 0', () => {
+      const { count } = useCounter()
+      expect(count.value).toBe(0)
+    })
 
-      expect(wrapper.find('.count').text()).toBe('0')
+    it('accepts custom initial value', () => {
+      const { count } = useCounter(10)
+      expect(count.value).toBe(10)
     })
   })
 
-  describe('user interactions', () => {
-    it('increments count when button clicked', async () => {
-      const wrapper = mount(Counter)
-      await wrapper.find('button').trigger('click')
-
-      expect(wrapper.find('.count').text()).toBe('1')
-    })
-  })
-
-  describe('props', () => {
-    it('accepts initial count prop', () => {
-      const wrapper = mount(Counter, {
-        props: { initialCount: 5 }
-      })
-
-      expect(wrapper.find('.count').text()).toBe('5')
-    })
-  })
-
-  describe('emits', () => {
-    it('emits update event', async () => {
-      const wrapper = mount(Counter)
-      await wrapper.find('button').trigger('click')
-
-      expect(wrapper.emitted('update')).toBeTruthy()
-      expect(wrapper.emitted('update')?.[0]).toEqual([1])
+  describe('actions', () => {
+    it('increments count by 1', () => {
+      const { count, increment } = useCounter()
+      increment()
+      expect(count.value).toBe(1)
     })
   })
 })
 ```
 
-### Test Coverage Requirements
+### Coverage Target
 
-- **Overall coverage**: 80% minimum
-- **Critical paths**: 100% required
-- **Utilities**: 90% minimum
-- **Components**: 75% minimum
+| Jenis          | Minimum Coverage |
+| -------------- | ---------------- |
+| Overall        | 80%              |
+| Utilities      | 90%              |
+| Composables    | 85%              |
+| Components     | 75%              |
+| Critical paths | 100%             |
 
-### E2E Testing
+### Nama Test File
 
-```typescript
-// ✅ GOOD: Test critical user flows
-import { test, expect } from '@playwright/test'
+```
+# Unit test
+test/unit/<category>/<namaFile>.spec.ts
 
-test.describe('Authentication Flow', () => {
-  test('user can log in', async ({ page }) => {
-    await page.goto('/login')
-
-    await page.fill('input[name="email"]', 'user@example.com')
-    await page.fill('input[name="password"]', 'password123')
-    await page.click('button[type="submit"]')
-
-    await expect(page).toHaveURL('/dashboard')
-    await expect(page.locator('h1')).toContainText('Welcome')
-  })
-
-  test('shows error with invalid credentials', async ({ page }) => {
-    await page.goto('/login')
-
-    await page.fill('input[name="email"]', 'invalid@example.com')
-    await page.fill('input[name="password"]', 'wrong')
-    await page.click('button[type="submit"]')
-
-    await expect(page.locator('.error')).toContainText('Invalid credentials')
-  })
-})
+# E2E test
+test/e2e/<namaFlow>.spec.ts
 ```
 
 ---
 
-## Git Workflow
+## Aturan Git Workflow
 
 ### Branch Naming
 
 ```
-feature/  New features
-  feature/user-authentication
-  feature/payment-integration
-
-fix/      Bug fixes
-  fix/login-error
-  fix/navigation-bug
-
-refactor/ Code refactoring
-  refactor/user-service
-  refactor-component-structure
-
-hotfix/   Urgent production fixes
-  hotfix/security-patch
-  hotfix/critical-bug
+<type>/<deskripsi-singkat>
 ```
 
-### Commit Messages
+| Prefix      | Fungsi                | Contoh                        |
+| ----------- | --------------------- | ----------------------------- |
+| `feature/`  | Fitur baru            | `feature/user-authentication` |
+| `fix/`      | Bug fix               | `fix/login-redirect-error`    |
+| `refactor/` | Refactoring           | `refactor/user-service`       |
+| `hotfix/`   | Fix urgent production | `hotfix/security-patch`       |
+| `chore/`    | Maintenance           | `chore/update-dependencies`   |
+| `docs/`     | Dokumentasi           | `docs/api-documentation`      |
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+### Commit Message Format
+
+Menggunakan [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-<type>: <description>
+<type>: <deskripsi singkat>
 
-[optional body]
+[optional body - penjelasan lebih detail]
 
-[optional footer]
+[optional footer - referensi issue, breaking changes]
 ```
 
-**Types**: feat, fix, refactor, docs, test, chore, perf, ci
+**Types:**
 
+| Type       | Kapan Digunakan                        |
+| ---------- | -------------------------------------- |
+| `feat`     | Menambah fitur baru                    |
+| `fix`      | Memperbaiki bug                        |
+| `refactor` | Mengubah code tanpa mengubah behavior  |
+| `docs`     | Perubahan dokumentasi saja             |
+| `test`     | Menambah atau memperbaiki test         |
+| `chore`    | Maintenance (update deps, konfigurasi) |
+| `perf`     | Peningkatan performa                   |
+| `ci`       | Perubahan CI/CD pipeline               |
+| `style`    | Perubahan formatting, bukan logic      |
+| `revert`   | Revert commit sebelumnya               |
+| `build`    | Perubahan build system                 |
+
+**Contoh:**
+
+```bash
+feat: add user registration form with email validation
+fix: resolve infinite loop on dashboard data fetch
+refactor: extract payment logic into composable
+docs: update API endpoint documentation
+test: add unit tests for useAuth composable
 ```
-feat: add user authentication flow
 
-- Implement login/logout
-- Add protected routes
-- Create auth composable
+### Pull Request
 
-Closes #123
-```
-
-### Pull Request Guidelines
-
-1. **Title**: Use conventional commit format
-2. **Description**: Explain what and why
-3. **Linked Issues**: Reference related tickets
-4. **Checks**: All CI checks must pass
-5. **Review**: Minimum 1 approval required
+1. **Title**: Gunakan format conventional commit
+2. **Description**: Jelaskan apa yang diubah dan kenapa
+3. **Linked Issues**: Referensikan ticket/issue terkait
+4. **Semua CI checks harus lulus**
+5. **Minimum 1 approval** sebelum merge
 
 ---
 
-## Code Quality Tools
+## Aturan Code Style
 
-### ESLint
+### Import Order (Wajib)
 
-We use ESLint with strict rules. Never disable rules without team discussion.
+```typescript
+// 1. External libraries
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
-```javascript
-// ❌ BAD: Disabling eslint
-// eslint-disable-next-line
-const x = any  // Wrong!
+// 2. Internal modules (gunakan @ alias)
+import Button from '@/components/common/Button.vue'
+import { useAuth } from '@/composables/useAuth'
+import { useUserStore } from '@/stores'
+import { formatDate } from '@/utils'
+
+// 3. Types (import type)
+import type { User } from '@/types'
+
+// 4. Static assets
+import logoUrl from '@/assets/images/logo.svg'
 ```
 
-### Prettier
+### Prettier Config
 
-Prettier formats code automatically. Don't fight the formatter.
+Konfigurasi Prettier yang digunakan (`.prettierrc.json`):
 
 ```json
 {
@@ -436,151 +709,162 @@ Prettier formats code automatically. Don't fight the formatter.
   "singleQuote": true,
   "tabWidth": 2,
   "trailingComma": "es5",
-  "printWidth": 100
+  "printWidth": 100,
+  "arrowParens": "always",
+  "endOfLine": "lf"
 }
 ```
 
-### Husky Pre-Commit Hooks
+Artinya:
 
-Pre-commit hooks automatically:
-1. Run linting
-2. Format code with Prettier
-3. Run tests
+- Tidak pakai semicolon (`;`)
+- Gunakan single quote (`'`)
+- Indent 2 spasi
+- Trailing comma di ES5 contexts
+- Max 100 karakter per baris
+- Selalu pakai parentheses di arrow function
 
-Commit will be blocked if hooks fail.
+### ESLint Rules
 
----
+Rules penting yang aktif:
 
-## Performance Guidelines
-
-### Computed Properties
-
-```typescript
-// ✅ GOOD: Use computed for derived state
-const fullName = computed(() => `${user.value.firstName} ${user.value.lastName}`)
-
-// ❌ BAD: Using method (re-runs every render)
-const fullName = () => `${user.value.firstName} ${user.value.lastName}`
-```
-
-### Lazy Loading
-
-```typescript
-// ✅ GOOD: Lazy load routes
-const routes = [
-  {
-    path: '/about',
-    component: () => import('@/views/AboutView.vue')
-  }
-]
-```
-
-### v-if vs v-show
-
-```vue
-<!-- ✅ GOOD: Use v-if for rarely toggled content -->
-<HeavyComponent v-if="showDetails" />
-
-<!-- ✅ GOOD: Use v-show for frequently toggled content -->
-<div v-show="isVisible">Content</div>
-```
+- `@typescript-eslint/no-explicit-any: error` - Tidak boleh pakai `any`
+- `@typescript-eslint/no-unused-vars: error` - Tidak boleh ada variable unused (exception: prefix `_`)
+- `vue/multi-word-component-names: off` - Nama component satu kata diperbolehkan
 
 ---
 
-## Security Best Practices
+## Aturan Keamanan
 
 ### Input Validation
 
 ```typescript
-// ✅ GOOD: Validate user input
-import { z } from 'zod'
-
-const schema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters')
-})
-
-const validated = schema.parse(input)
+// WAJIB: Validasi input user sebelum digunakan
+const sanitizeInput = (input: string): string => {
+  return input.trim().slice(0, 500)
+}
 ```
 
 ### XSS Prevention
 
 ```vue
-<!-- ❌ BAD: Unescaped HTML (XSS risk) -->
+<!-- DILARANG: v-html dengan user input -->
 <div v-html="userContent" />
 
-<!-- ✅ GOOD: Use text interpolation -->
+<!-- WAJIB: Gunakan text interpolation -->
 <div>{{ userContent }}</div>
-
-<!-- ✅ GOOD: Sanitize if HTML is necessary -->
-<div v-html="DOMPurify.sanitize(userContent)" />
 ```
 
 ### Environment Variables
 
 ```typescript
-// ✅ GOOD: Use environment variables
+// WAJIB: Validasi env variables saat startup
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-
 if (!apiBaseUrl) {
   throw new Error('VITE_API_BASE_URL is not configured')
 }
+
+// DILARANG: Hardcode secrets di code
+const apiKey = 'sk-1234567890' // JANGAN!
+```
+
+### URL Encoding
+
+```typescript
+// WAJIB: Encode user input di URL
+const searchUrl = `/api/search?q=${encodeURIComponent(query)}`
+
+// DILARANG: String interpolation langsung
+const searchUrl = `/api/search?q=${query}` // XSS risk!
 ```
 
 ---
 
-## Quick Reference
+## Aturan Performa
 
-### Essential Commands
+### Computed vs Method
+
+```typescript
+// WAJIB: Gunakan computed untuk derived state (di-cache)
+const fullName = computed(() => `${firstName.value} ${lastName.value}`)
+
+// HINDARI: Method yang dipanggil di template (re-run setiap render)
+const getFullName = () => `${firstName.value} ${lastName.value}`
+```
+
+### Lazy Loading
+
+```typescript
+// WAJIB: Lazy load semua route components
+component: () => import('@/views/HeavyView.vue')
+
+// WAJIB: Lazy load komponen berat
+const HeavyChart = defineAsyncComponent(() => import('./HeavyChart.vue'))
+```
+
+### v-if vs v-show
+
+```vue
+<!-- Jarang toggle -> v-if (destroy/recreate DOM) -->
+<HeavyModal v-if="isOpen" />
+
+<!-- Sering toggle -> v-show (CSS display:none) -->
+<Tooltip v-show="isHovered" />
+```
+
+### Watch
+
+```typescript
+// HINDARI: deep watch pada object besar
+watch(largeObject, () => { ... }, { deep: true }) // Mahal!
+
+// WAJIB: Watch property spesifik
+watch(() => largeObject.value.specificProp, () => { ... })
+```
+
+---
+
+## Checklist Sebelum Commit
+
+Jalankan semua command berikut sebelum commit:
 
 ```bash
-# Development
-pnpm dev              # Start dev server
-pnpm build            # Build for production
-pnpm preview          # Preview production build
-
-# Code Quality
-pnpm run lint         # Run ESLint
-pnpm run lint:fix     # Fix ESLint errors
-pnpm run format       # Format with Prettier
-pnpm run type-check   # TypeScript type check
-
-# Testing
-pnpm run test         # Run unit tests
-pnpm run test:e2e     # Run E2E tests
-
-# Git
-pnpm run prepare      # Setup Husky hooks
+npm run lint          # Cek linting errors
+npm run format        # Format code
+npm run type-check    # Cek TypeScript types
+npm run test:run      # Jalankan unit tests
 ```
 
-### File Structure Quick Reference
+### Review Checklist
 
-```
-src/
-├── assets/         # Static assets (CSS, images)
-├── components/     # Vue components
-│   ├── common/     # Generic reusable (Button, Input)
-│   └── features/   # Feature-specific components
-├── composables/    # Composition API logic
-├── router/         # Vue Router configuration
-├── stores/         # Pinia stores (optional)
-├── views/          # Route components (pages)
-├── types/          # TypeScript types
-└── utils/          # Utility functions
-```
+- [ ] TypeScript strict mode - tidak ada `any`
+- [ ] Tidak ada mutasi langsung - gunakan spread atau `structuredClone`
+- [ ] Components menggunakan `<script setup lang="ts">`
+- [ ] Props memiliki interface yang proper
+- [ ] Emits memiliki typed interface
+- [ ] Style menggunakan `scoped`
+- [ ] File diberi nama sesuai konvensi
+- [ ] File ditempatkan di folder yang benar
+- [ ] Import menggunakan `@` alias
+- [ ] Import types menggunakan `import type`
+- [ ] Error handling dengan try/catch
+- [ ] Tidak ada `console.log` (hapus sebelum commit)
+- [ ] Test ditambahkan/diupdate
+- [ ] ESLint lulus tanpa warning
+- [ ] Prettier formatting sudah applied
 
 ---
 
-## References & External Resources
+## Referensi
 
-Official Documentation:
-- [Vue 3 Guide](https://vuejs.org/guide/introduction.html) - Core Vue concepts
-- [Vite Guide](https://vite.dev/guide/) - Build tool documentation
-- [Vue Router](https://router.vuejs.org/) - Routing documentation
-- [Pinia](https://pinia.vuejs.org/) - State management
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/) - TypeScript fundamentals
-- [Vitest](https://vitest.dev/) - Unit testing framework
-- [Playwright](https://playwright.dev/) - E2E testing framework
-- [VueUse](https://vueuse.org/) - Vue composition utilities
+- [Vue 3 Documentation](https://vuejs.org/guide/introduction.html)
+- [Vite Guide](https://vite.dev/guide/)
+- [Vue Router](https://router.vuejs.org/)
+- [Pinia](https://pinia.vuejs.org/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Vitest](https://vitest.dev/)
+- [Playwright](https://playwright.dev/)
+- [VueUse](https://vueuse.org/)
+- [Conventional Commits](https://www.conventionalcommits.org/)
 
-For detailed AI-specific guidelines, see [CLAUDE.md](./CLAUDE.md).
+Untuk panduan AI code review, lihat [CLAUDE.md](./CLAUDE.md).

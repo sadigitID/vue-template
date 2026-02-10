@@ -19,6 +19,6 @@ export function useCounter(initialValue = 0) {
     count,
     increment,
     decrement,
-    reset
+    reset,
   }
 }

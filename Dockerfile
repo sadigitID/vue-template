@@ -3,20 +3,17 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9
-
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json package-lock.json* ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build application
-RUN pnpm run build
+RUN npm run build
 
 # Production stage
 FROM nginx:alpine AS production
@@ -31,4 +28,4 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 # Start nginx
-CMD ['nginx', '-g', 'daemon off;']
+CMD ["nginx", "-g", "daemon off;"]

@@ -6,7 +6,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   variant: 'primary',
-  disabled: false
+  disabled: false,
 })
 </script>
 
