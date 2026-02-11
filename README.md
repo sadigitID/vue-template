@@ -1,6 +1,6 @@
 # Vue + Vite Template
 
-Template project Vue 3 + Vite siap pakai untuk development aplikasi web modern dengan konfigurasi lengkap untuk TypeScript, linting, formatting, testing, dan deployment.
+[Vue 3](https://vuejs.org/) adalah framework JavaScript untuk membangun antarmuka pengguna (UI) yang reaktif dan berbasis komponen. [Vite](https://vite.dev/) adalah build tool modern yang menyediakan Hot Module Replacement (HMR) super cepat saat development dan build yang optimal untuk production. Template ini menggabungkan keduanya dengan konfigurasi lengkap — TypeScript, linting, formatting, testing, dan deployment — siap pakai tanpa perlu setup dari nol.
 
 ## Tech Stack
 
@@ -46,7 +46,29 @@ npm run dev
 
 Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-> **Catatan:** `degit` akan men-download template tanpa `.git` history, sehingga Anda mendapatkan project bersih yang siap di-inisialisasi dengan `git init`.
+> **Apa itu `degit`?** `degit` adalah tool dari [Rich Harris](https://github.com/Rich-Harris/degit) yang men-download repository Git **tanpa** history commit. Hasilnya adalah project bersih yang siap di-inisialisasi dengan `git init`. Perintah `npx degit sadigitid/vue-template` akan mengambil template ini langsung dari GitHub.
+
+> **Kenapa `npm` bukan `pnpm`?** Template ini menggunakan `npm` karena sudah tersedia bawaan bersama Node.js — tidak perlu install package manager tambahan. Jika tim memilih menggunakan `pnpm` atau `yarn`, cukup ganti perintah `npm` di atas dan di `package.json`.
+
+## Coba Dulu
+
+Setelah menjalankan `npm run dev`, ikuti langkah-langkah berikut untuk memastikan semuanya berjalan:
+
+### 1. Buka Browser
+
+Buka [http://localhost:3000](http://localhost:3000) — kamu akan melihat halaman utama template.
+
+### 2. Coba Navigasi
+
+Klik link "About" di navigasi. Halaman akan berganti tanpa reload browser — ini adalah client-side routing dari Vue Router. Setiap file di `src/views/` yang didaftarkan di `src/router/index.ts` menjadi halaman.
+
+### 3. Coba Hot Module Replacement
+
+Buka file `src/views/HomeView.vue`, ubah teks di template (misalnya ganti judul), lalu simpan. Perubahan langsung muncul di browser tanpa perlu refresh — ini adalah HMR dari Vite.
+
+### 4. Coba 404 Page
+
+Buka URL yang tidak ada, misalnya [http://localhost:3000/halaman-tidak-ada](http://localhost:3000/halaman-tidak-ada). Kamu akan melihat halaman 404 dari `src/views/NotFoundView.vue`.
 
 ## Struktur Project
 
@@ -361,6 +383,28 @@ git commit -m "fix: resolve login redirect issue"
 git commit -m "refactor: simplify user store logic"
 ```
 
+## Konsep Dasar Vue + Vite
+
+Jika kamu baru mengenal Vue atau Vite, berikut istilah-istilah penting yang akan sering ditemui:
+
+| Istilah              | Penjelasan                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Component**        | Blok bangunan utama Vue — setiap bagian UI (tombol, form, halaman) adalah komponen yang bisa dipakai ulang          |
+| **`<script setup>`** | Sintaks ringkas untuk Composition API di dalam Single File Component (`.vue`) — lebih pendek dan performan          |
+| **Composition API**  | Cara menulis logika komponen menggunakan fungsi (`ref`, `computed`, `watch`) — lebih fleksibel daripada Options API |
+| **Composable**       | Fungsi reusable yang mengenkapsulasi logika reaktif (prefix `use`), misalnya `useCounter()`, `useAuth()`            |
+| **`ref`**            | Membuat nilai reaktif primitif (`string`, `number`, `boolean`). Akses nilainya via `.value`                         |
+| **`reactive`**       | Membuat objek reaktif secara mendalam. Cocok untuk state kompleks, tapi tidak bisa di-destructure langsung          |
+| **`computed`**       | Nilai turunan yang di-cache — hanya dihitung ulang saat dependensinya berubah                                       |
+| **Props**            | Data yang dikirim dari parent ke child component — bersifat read-only                                               |
+| **Emits**            | Cara child component mengirim event/data ke parent component                                                        |
+| **Store (Pinia)**    | Tempat menyimpan state yang perlu diakses dari banyak komponen — alternatif Vuex yang lebih modern                  |
+| **Vue Router**       | Library routing resmi Vue — menangani navigasi antar halaman tanpa reload browser (SPA)                             |
+| **SPA**              | Single Page Application — seluruh app dimuat sekali, navigasi dilakukan di client tanpa request halaman baru        |
+| **HMR**              | Hot Module Replacement — perubahan kode langsung terlihat di browser tanpa refresh, disediakan oleh Vite            |
+| **Vite**             | Build tool yang menggunakan ES modules di browser saat development (sangat cepat) dan Rollup untuk production       |
+| **Barrel Export**    | File `index.ts` yang meng-re-export semua module dari satu folder, sehingga import lebih ringkas                    |
+
 ## Lisensi
 
 MIT
@@ -375,5 +419,5 @@ MIT
 - [Vitest](https://vitest.dev/)
 - [Playwright](https://playwright.dev/)
 - [VueUse](https://vueuse.org/)
-- **[RULES.md](./RULES.md)** - Aturan development lengkap
-- **[CLAUDE.md](./CLAUDE.md)** - AI code review guidelines
+- **[RULES.md](./RULES.md)** — Aturan development lengkap
+- **[CLAUDE.md](./CLAUDE.md)** — Panduan untuk AI tools (Claude, Copilot, dll) — berisi konteks teknis project agar AI bisa membantu lebih akurat. Tidak perlu dibaca manual oleh developer

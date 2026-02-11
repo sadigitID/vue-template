@@ -2,6 +2,19 @@
 
 Dokumen ini mendefinisikan aturan dan standar development untuk project Vue 3 + Vite. Semua anggota tim wajib mengikuti panduan ini.
 
+> **Glosarium Singkat**
+>
+> - **Composition API:** Cara menulis logika komponen menggunakan fungsi (`ref`, `computed`, `watch`) — lebih fleksibel dan reusable dibanding Options API.
+> - **`<script setup>`:** Sintaks ringkas untuk Composition API di dalam file `.vue`. Semua variable dan fungsi yang dideklarasikan langsung tersedia di template tanpa perlu `return`.
+> - **Composable:** Fungsi reusable yang mengenkapsulasi logika reaktif (selalu diawali prefix `use`), misalnya `useCounter()`, `useAuth()`.
+> - **Pinia:** State management resmi Vue 3 — pengganti Vuex yang lebih sederhana dan mendukung Composition API.
+> - **Reactivity (`ref` vs `reactive`):** `ref()` untuk nilai primitif (akses via `.value`), `reactive()` untuk objek (akses langsung). Keduanya membuat data "reaktif" — UI otomatis update saat data berubah.
+> - **`computed`:** Nilai turunan yang di-cache — hanya dihitung ulang saat dependensinya berubah, berbeda dengan method biasa yang dipanggil setiap render.
+> - **Barrel Export:** File `index.ts` yang meng-re-export semua module dari satu folder, sehingga import lebih ringkas (misalnya `import { useAppStore } from '@/stores'` alih-alih `from '@/stores/app'`).
+> - **SPA (Single Page Application):** Seluruh app dimuat sekali, navigasi dilakukan di client tanpa request halaman baru — berbeda dengan website tradisional yang memuat ulang seluruh halaman.
+> - **HMR (Hot Module Replacement):** Fitur Vite yang menampilkan perubahan kode langsung di browser tanpa refresh.
+> - **Scoped Styles:** Atribut `<style scoped>` yang membatasi CSS hanya berlaku untuk komponen tersebut, mencegah konflik styling antar komponen.
+
 ## Daftar Isi
 
 - [Prinsip Umum](#prinsip-umum)
@@ -23,6 +36,8 @@ Dokumen ini mendefinisikan aturan dan standar development untuk project Vue 3 + 
 
 ## Prinsip Umum
 
+Prinsip-prinsip berikut menjadi dasar semua keputusan teknis di project ini. Jika ragu antara dua pendekatan, pilih yang paling sesuai dengan prinsip ini.
+
 1. **Readability First** - Code dibaca lebih sering daripada ditulis
 2. **Explicit over Implicit** - Buat niat sejelas mungkin
 3. **Small is Beautiful** - Jaga komponen dan fungsi tetap fokus
@@ -34,6 +49,8 @@ Dokumen ini mendefinisikan aturan dan standar development untuk project Vue 3 + 
 ---
 
 ## Aturan Penamaan File
+
+Penamaan yang konsisten memudahkan developer lain memahami isi file hanya dari namanya. Bagian ini mendefinisikan konvensi penamaan untuk setiap jenis file dalam project.
 
 ### Konvensi Penamaan
 
@@ -106,6 +123,8 @@ const data: any = {} // Selalu gunakan type yang spesifik
 ---
 
 ## Aturan Struktur Folder
+
+Struktur folder yang terorganisir membuat kode mudah ditemukan dan dipahami, terutama saat project berkembang. Setiap jenis file memiliki tempat yang sudah ditentukan.
 
 ### Folder `src/`
 
@@ -181,7 +200,7 @@ src/
 
 ### Barrel Exports (index.ts)
 
-Setiap folder yang berisi module wajib punya `index.ts` sebagai barrel export:
+Setiap folder yang berisi module wajib punya `index.ts` sebagai barrel export. Barrel export menyederhanakan import — alih-alih mengingat nama file spesifik, cukup import dari folder.
 
 ```typescript
 // src/stores/index.ts
@@ -212,6 +231,8 @@ import { useAppStore } from '@/stores/app'
 ---
 
 ## Aturan Vue Component
+
+Bagian ini mengatur bagaimana komponen Vue harus ditulis. Urutan yang konsisten membuat kode lebih mudah dibaca dan di-review, terutama saat project berkembang dengan banyak kontributor.
 
 ### Struktur Component (Urutan Wajib)
 
@@ -289,6 +310,8 @@ onMounted(() => {
 
 ### Props
 
+Props adalah cara mengirim data dari parent ke child component. Selalu gunakan interface TypeScript untuk mendefinisikan tipe props.
+
 ```typescript
 // WAJIB: Gunakan interface untuk props
 interface Props {
@@ -310,6 +333,8 @@ defineProps({
 ```
 
 ### Emits
+
+Emits adalah cara child component mengirim event ke parent. Selalu gunakan typed emits agar tipe parameter event diperiksa saat compile time.
 
 ```typescript
 // WAJIB: Gunakan typed emits
@@ -335,6 +360,8 @@ Logic reusable?                      -> Composable
 ---
 
 ## Aturan TypeScript
+
+TypeScript strict mode memastikan tipe data diperiksa secara ketat saat development, sehingga bug bisa tertangkap lebih awal sebelum kode berjalan di production.
 
 ### Strict Mode
 
@@ -384,6 +411,8 @@ import { User, UserRole } from '@/types/user'
 
 ### Error Handling
 
+Penanganan error yang baik membuat aplikasi lebih robust dan membantu debugging. Selalu gunakan try-catch untuk operasi async dan type guard untuk validasi runtime.
+
 ```typescript
 // WAJIB: Try-catch untuk async operations
 async function fetchUser(id: string): Promise<User> {
@@ -408,6 +437,8 @@ function isUser(data: unknown): data is User {
 ---
 
 ## Aturan Styling
+
+Bagian ini mengatur bagaimana styling diterapkan di komponen. Konsistensi styling mencegah konflik CSS antar komponen dan membuat tampilan lebih mudah di-maintain.
 
 ### CSS Scoped
 
@@ -458,6 +489,8 @@ Global styles hanya boleh ditempatkan di `src/assets/main.css` dan hanya berisi:
 ---
 
 ## Aturan State Management (Pinia)
+
+Pinia adalah state management resmi Vue 3. Tidak semua state perlu masuk store — gunakan Pinia hanya jika state benar-benar dibagi oleh banyak komponen yang tidak memiliki hubungan parent-child langsung.
 
 ### Kapan Menggunakan Pinia
 
@@ -514,6 +547,8 @@ export const useUserStore = defineStore('user', () => {
 
 ## Aturan Routing
 
+Vue Router menangani navigasi antar halaman di SPA. Dengan konfigurasi yang konsisten, navigasi menjadi lebih predictable dan mudah di-debug.
+
 ### Route Naming
 
 ```typescript
@@ -548,6 +583,8 @@ Route catch-all `/:pathMatch(.*)*` wajib ada sebagai route terakhir.
 ---
 
 ## Aturan Testing
+
+Testing memastikan fitur bekerja sesuai harapan dan tidak rusak saat ada perubahan kode. Template ini menggunakan Vitest untuk unit test dan Playwright untuk end-to-end test.
 
 ### Struktur Test
 
@@ -612,6 +649,8 @@ test/e2e/<namaFlow>.spec.ts
 ---
 
 ## Aturan Git Workflow
+
+Konsistensi dalam penamaan branch dan format commit message membuat history Git lebih mudah dibaca dan memungkinkan otomasi seperti changelog generation.
 
 ### Branch Naming
 
@@ -678,6 +717,8 @@ test: add unit tests for useAuth composable
 
 ## Aturan Code Style
 
+Bagian ini mengatur format kode agar konsisten di seluruh project. ESLint dan Prettier sudah dikonfigurasi untuk meng-enforce sebagian besar aturan ini secara otomatis.
+
 ### Import Order (Wajib)
 
 ```typescript
@@ -736,6 +777,8 @@ Rules penting yang aktif:
 
 ## Aturan Keamanan
 
+Keamanan adalah aspek yang harus diperhatikan sejak awal development, bukan ditambahkan belakangan. Berikut aturan-aturan dasar untuk menjaga aplikasi tetap aman.
+
 ### Input Validation
 
 ```typescript
@@ -781,6 +824,8 @@ const searchUrl = `/api/search?q=${query}` // XSS risk!
 ---
 
 ## Aturan Performa
+
+Performa yang baik dimulai dari kebiasaan coding yang tepat. Berikut aturan-aturan yang membantu menjaga aplikasi tetap cepat, terutama saat project berkembang.
 
 ### Computed vs Method
 
