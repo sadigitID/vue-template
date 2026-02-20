@@ -11,6 +11,7 @@
 | [TypeScript](https://www.typescriptlang.org/)         | 5.6   | Type safety (strict mode)                         |
 | [Vue Router](https://router.vuejs.org/)               | 4     | Client-side routing                               |
 | [Pinia](https://pinia.vuejs.org/)                     | 2.3   | State management                                  |
+| [Axios](https://axios-http.com/)                      | 1.7   | HTTP client untuk API requests                    |
 | [Vitest](https://vitest.dev/)                         | 2     | Unit testing                                      |
 | [Playwright](https://playwright.dev/)                 | 1.49  | E2E testing                                       |
 | [ESLint](https://eslint.org/)                         | 9     | Code linting                                      |
@@ -96,6 +97,13 @@ vue-vite-template/
 │   │   └── useCounter.ts
 │   ├── router/                    # Vue Router konfigurasi
 │   │   └── index.ts
+│   ├── services/                  # API services layer
+│   │   ├── api/                   # API client & types
+│   │   │   ├── client.ts          # Axios instance dengan interceptors
+│   │   │   ├── types.ts           # API type definitions
+│   │   │   ├── index.ts           # API service (CRUD methods)
+│   │   │   └── endpoints/         # Endpoint-specific services
+│   │   └── index.ts               # Service exports
 │   ├── stores/                    # Pinia stores
 │   │   ├── app.ts                 # Global app store
 │   │   └── index.ts               # Store exports
@@ -292,6 +300,330 @@ interface ImportMetaEnv {
 
 ```typescript
 const myVar = import.meta.env.VITE_MY_VARIABLE
+```
+
+## API Requests
+
+Template ini menyertakan **API service layer** yang siap pakai dengan Axios, dilengkapi:
+
+- ✅ Axios instance dengan interceptors
+- ✅ Auto auth token injection
+- ✅ Global error handling (401 auto-redirect)
+- ✅ TypeScript types untuk semua requests/responses
+- ✅ Composable reaktif dengan loading states
+- ✅ Progress tracking untuk upload/download
+
+### Konfigurasi Environment
+
+Tambahkan konfigurasi API di `.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:3001/api
+VITE_API_TIMEOUT=30000
+```
+
+### Cara Penggunaan
+
+#### 1. Direct API Calls
+
+Gunakan `api` service langsung di dalam fungsi atau methods:
+
+```typescript
+import { api } from '@/services/api'
+import type { User } from '@/types/user'
+
+// GET - ambil single resource
+const user = await api.get<User>('/users/123')
+
+// POST - create resource
+const newUser = await api.post<User>('/users', {
+  name: 'John Doe',
+  email: 'john@example.com',
+})
+
+// PUT - update full resource
+const updated = await api.put<User>('/users/123', {
+  name: 'Jane Doe',
+  email: 'jane@example.com',
+})
+
+// PATCH - update partial
+const patched = await api.patch<User>('/users/123', {
+  name: 'Jane Doe',
+})
+
+// DELETE - hapus resource
+await api.delete('/users/123')
+
+// Dengan query parameters
+const users = await api.get<User[]>('/users', {
+  params: { page: 1, limit: 10, search: 'john' },
+})
+
+// Paginated response
+const result = await api.getPaginated<User>('/users', {
+  page: 1,
+  limit: 10,
+})
+console.log(result.items) // array of users
+console.log(result.meta) // pagination metadata
+```
+
+#### 2. Dengan Composables (Reaktif)
+
+Gunakan composables untuk loading state dan error handling otomatis:
+
+```vue
+<script setup lang="ts">
+import { useFetch, usePost, usePaginated } from '@/composables/useApi'
+import { onMounted } from 'vue'
+
+// GET dengan reaktif loading/error states
+const { data, loading, error, execute } = useFetch<User>('/users/123')
+
+// POST dengan payload
+const createMutation = usePost<User>('/users', {
+  onSuccess: (data) => {
+    console.log('User created:', data)
+  },
+  onError: (error) => {
+    console.error('Create failed:', error.message)
+  },
+})
+
+// Paginated data dengan navigasi
+const { items, loading, currentPage, totalPages, nextPage, prevPage, goToPage } =
+  usePaginated<User>('/users', { limit: 20 })
+
+onMounted(() => {
+  execute() // fetch data on mount
+})
+</script>
+
+<template>
+  <!-- Loading state -->
+  <div v-if="loading">Loading...</div>
+
+  <!-- Error state -->
+  <div v-else-if="error" class="error">
+    {{ error.message }}
+  </div>
+
+  <!-- Success state -->
+  <div v-else-if="data">
+    {{ data.name }}
+  </div>
+
+  <!-- Pagination -->
+  <div v-if="items.length > 0">
+    <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
+    <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+  </div>
+</template>
+```
+
+#### 3. Membuat Endpoint Service
+
+Untuk API yang sering digunakan, buat service di `services/api/endpoints/`:
+
+```typescript
+// src/services/api/endpoints/users.ts
+import { api } from '@/services/api'
+import type { PaginatedResponse, QueryParams } from '@/services/api/types'
+
+// Type definitions
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: 'admin' | 'user'
+  createdAt: string
+}
+
+export interface CreateUserDto {
+  name: string
+  email: string
+  password: string
+}
+
+export interface UpdateUserDto {
+  name?: string
+  email?: string
+}
+
+// Service functions
+export const userService = {
+  // Get all users (paginated)
+  findAll: (params: QueryParams = {}) => api.getPaginated<User>('/users', params),
+
+  // Get single user by ID
+  findOne: (id: string) => api.get<User>(`/users/${id}`),
+
+  // Create new user
+  create: (data: CreateUserDto) => api.post<User>('/users', data),
+
+  // Update user
+  update: (id: string, data: UpdateUserDto) => api.patch<User>(`/users/${id}`, data),
+
+  // Delete user
+  remove: (id: string) => api.delete<void>(`/users/${id}`),
+
+  // Custom endpoint
+  changePassword: (id: string, newPassword: string) =>
+    api.post<void>(`/users/${id}/change-password`, { password: newPassword }),
+}
+```
+
+Gunakan di component:
+
+```typescript
+import { userService } from '@/services/api/endpoints/users'
+
+// Get all users
+const result = await userService.findAll({ page: 1, limit: 10 })
+
+// Create user
+const newUser = await userService.create({
+  name: 'John',
+  email: 'john@example.com',
+  password: 'secret123',
+})
+```
+
+#### 4. Authentication
+
+Set auth token setelah login:
+
+```typescript
+import { api } from '@/services/api'
+
+// Set token setelah login
+api.setAuth('your-jwt-token-here')
+
+// Clear token setelah logout
+api.clearAuth()
+
+// Request tanpa auth (skip auth token)
+await api.get('/public-data', { skipAuth: true })
+```
+
+#### 5. File Upload
+
+Upload dengan progress tracking:
+
+```vue
+<script setup lang="ts">
+import { useUpload } from '@/composables/useApi'
+import { ref } from 'vue'
+
+const fileInput = ref<HTMLInputElement | null>(null)
+
+const { upload, progress, uploading, error } = useUpload('/upload')
+
+const handleFileSelect = async () => {
+  const file = fileInput.value?.files?.[0]
+  if (file) {
+    await upload(file)
+    if (!error.value) {
+      alert('Upload complete!')
+    }
+  }
+}
+</script>
+
+<template>
+  <div>
+    <input ref="fileInput" type="file" @change="handleFileSelect" />
+    <div v-if="uploading">Uploading: {{ progress }}%</div>
+    <div v-if="error" class="error">{{ error.message }}</div>
+  </div>
+</template>
+```
+
+#### 6. Error Handling
+
+API error memiliki struktur:
+
+```typescript
+interface ApiError {
+  message: string // Error message utama
+  code?: string // Error code (NETWORK_ERROR, dll)
+  status?: number // HTTP status code
+  errors?: Record<string, string[]> // Validation errors
+}
+```
+
+Handle error dengan try-catch atau composable:
+
+```typescript
+// Dengan try-catch
+try {
+  const user = await api.get<User>('/users/123')
+} catch (err) {
+  const error = err as ApiError
+  if (error.status === 404) {
+    console.log('User not found')
+  } else if (error.code === 'NETWORK_ERROR') {
+    console.log('No internet connection')
+  } else {
+    console.log(error.message)
+  }
+}
+
+// Dengan composable
+const { data, error } = await useFetch<User>('/users/123')
+if (error.value) {
+  // Handle error
+}
+```
+
+### Struktur API Service
+
+```
+src/services/
+├── api/
+│   ├── client.ts           # Axios instance + interceptors
+│   ├── types.ts            # Type definitions
+│   ├── index.ts            # API service class
+│   └── endpoints/
+│       └── example.ts      # Contoh endpoint service
+└── index.ts                # Barrel exports
+```
+
+### API Types Reference
+
+```typescript
+// Query parameters untuk filtering & pagination
+interface QueryParams {
+  page?: number
+  limit?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  search?: string
+  [key: string]: unknown // custom params
+}
+
+// Paginated response
+interface PaginatedResponse<T> {
+  items: T[]
+  meta: {
+    currentPage: number
+    totalPages: number
+    totalItems: number
+    perPage: number
+    hasNextPage: boolean
+    hasPrevPage: boolean
+  }
+}
+
+// API Error
+interface ApiError {
+  message: string
+  code?: string
+  status?: number
+  errors?: Record<string, string[]>
+}
 ```
 
 ## Path Alias
