@@ -167,6 +167,65 @@ const currentYear = computed(() => new Date().getFullYear())
           >
             {{ item.name }}
           </router-link>
+          <!-- Mobile Theme Toggle -->
+          <button
+            class="nav-mobile-theme-toggle"
+            @click="
+              () => {
+                toggle()
+                closeMobileMenu()
+              }
+            "
+          >
+            <svg v-if="isDark" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="5" stroke-width="2" />
+              <line x1="12" y1="1" x2="12" y2="3" stroke-width="2" stroke-linecap="round" />
+              <line x1="12" y1="21" x2="12" y2="23" stroke-width="2" stroke-linecap="round" />
+              <line
+                x1="4.22"
+                y1="4.22"
+                x2="5.64"
+                y2="5.64"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line
+                x1="18.36"
+                y1="18.36"
+                x2="19.78"
+                y2="19.78"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line x1="1" y1="12" x2="3" y2="12" stroke-width="2" stroke-linecap="round" />
+              <line x1="21" y1="12" x2="23" y2="12" stroke-width="2" stroke-linecap="round" />
+              <line
+                x1="4.22"
+                y1="19.78"
+                x2="5.64"
+                y2="18.36"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line
+                x1="18.36"
+                y1="5.64"
+                x2="19.78"
+                y2="4.22"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <svg v-else class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span>{{ isDark ? 'Light Mode' : 'Dark Mode' }}</span>
+          </button>
         </div>
       </div>
     </header>
@@ -309,17 +368,18 @@ const currentYear = computed(() => new Date().getFullYear())
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  color: hsl(var(--muted));
-  background: transparent;
-  border: none;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .theme-toggle:hover {
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--muted) / 0.5);
+  background-color: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary));
 }
 
 .theme-toggle .icon {
@@ -418,6 +478,34 @@ const currentYear = computed(() => new Date().getFullYear())
 .nav-mobile-link.active {
   color: hsl(var(--primary));
   background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Mobile Theme Toggle */
+.nav-mobile-theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: hsl(var(--muted));
+  background: transparent;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-mobile-theme-toggle:hover {
+  color: hsl(var(--primary));
+  background-color: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--primary));
+}
+
+.nav-mobile-theme-toggle .icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 /* Main Content */
