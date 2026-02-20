@@ -24,10 +24,10 @@ importers:
         version: 5.0.3(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
     devDependencies:
       '@commitlint/cli':
-        specifier: ^20.4.1
+        specifier: ^20.4.2
         version: 20.4.2(@types/node@22.19.11)(typescript@5.9.3)
       '@commitlint/config-conventional':
-        specifier: ^20.4.1
+        specifier: ^20.4.2
         version: 20.4.2
       '@eslint/js':
         specifier: ^10.0.1
@@ -36,7 +36,7 @@ importers:
         specifier: ^1.58.2
         version: 1.58.2
       '@types/node':
-        specifier: ^22.10.5
+        specifier: ^22.19.11
         version: 22.19.11
       '@vitejs/plugin-vue':
         specifier: ^6.0.4
@@ -60,19 +60,19 @@ importers:
         specifier: ^10.8.0
         version: 10.8.0(@typescript-eslint/parser@8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.0.0(jiti@2.6.1)))
       globals:
-        specifier: ^15.14.0
+        specifier: ^15.15.0
         version: 15.15.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
       jsdom:
-        specifier: ^28.0.0
+        specifier: ^28.1.0
         version: 28.1.0
       lint-staged:
-        specifier: ^15.2.11
+        specifier: ^15.5.2
         version: 15.5.2
       prettier:
-        specifier: ^3.4.2
+        specifier: ^3.8.1
         version: 3.8.1
       typescript:
         specifier: ~5.9.3
